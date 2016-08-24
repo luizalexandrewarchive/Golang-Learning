@@ -27,6 +27,7 @@ func getValues() []float32{
 
 }
 
+
 func toFloat(valoresOrigem []string) []float32{	
 
 	var valoresFloat []float32
