@@ -6,12 +6,10 @@ import (
 )
 
 func main() {
-	var quadro = potencia(2)
-	var dez = potencia(10)
-	fmt.Println(quadro(25))
-	fmt.Println(dez(25))
-	fmt.Println(dez(1))
-	fmt.Println(dez(3))
+	var potenciaDez = potencia(10)
+	var potenciaDois = potencia(2)
+	fmt.Println(potenciaDez(10))
+	fmt.Println(potenciaDois(5))
 }
 
 func potencia(exp int) func(int) int {
