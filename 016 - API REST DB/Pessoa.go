@@ -1,10 +1,11 @@
 package main
 
 type Pessoa struct {
-	ID     int    `json:"id"`
-	Nome   string `json:"nome"`
-	Email  string `json:"email"`
-	Cidade string `json:"cidade"`
+	ID    int
+	Nome  string
+	CPF   string
+	Senha string
+	Email string
 }
 
 type Pessoas []Pessoa

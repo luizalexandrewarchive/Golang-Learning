@@ -1,11 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
@@ -15,16 +17,34 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 func GetAllPessoas(w http.ResponseWriter, r *http.Request) {
 
-	pessoas := Pessoas{
-		Pessoa{ID: 01, Nome: "Luiz Alexandre de Sousa Freitas", Email: "luiz.alexandre@live.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 02, Nome: "Luana Almeida Goncalves", Email: "luana.arte@live.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 03, Nome: "Eduardo Oliveira Cavalcanti", Email: "EduardoOliveiraCavalcanti@dayrep.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 04, Nome: "Daniel Goncalves Sousa", Email: "daniel.golsalves@live.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 05, Nome: "Gabrielly Rodrigues Santos", Email: "GabriellyRodriguesSantos@rhyta.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 06, Nome: "Sofia Lima Alves", Email: "SofiaLimaAlves@rhyta.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 07, Nome: "Caio Ribeiro Ferreira", Email: "CaioRibeiroFerreira@armyspy.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 10, Nome: "Carolina Goncalves Oliveira", Email: "CarolinaGoncalvesOliveira@dayrep.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 11, Nome: "Vinícius Pinto Santos", Email: "ViniciusPintoSantos@dayrep.com", Cidade: "Morrinhos"},
+	db, err := sql.Open("mysql", "root:luizgostaderuby@tcp(138.197.3.102:3306)/dojo")
+	if err != nil {
+		fmt.Print("DEU RUIM")
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT p.id, p.nome, p.cpf, p.senha, e.email FROM pessoas p JOIN emails e on p.id = e.pessoa_id")
+	if err != nil {
+		fmt.Print("DEU RUIM")
+		panic(err.Error())
+	}
+
+	pessoas := Pessoas{}
+
+	for rows.Next() {
+		var id int
+		var nome string
+		var cpf string
+		var senha string
+		var email string
+
+		err = rows.Scan(&id, &nome, &cpf, &senha, &email)
+
+		pessoa := Pessoa{ID: id, Nome: nome, Email: email, CPF: cpf, Senha: senha}
+
+		pessoas = append(pessoas, pessoa)
+
 	}
 
 	if err := json.NewEncoder(w).Encode(pessoas); err != nil {
@@ -34,27 +54,44 @@ func GetAllPessoas(w http.ResponseWriter, r *http.Request) {
 
 func GetPessoaID(w http.ResponseWriter, r *http.Request) {
 
-	pessoas := Pessoas{
-		Pessoa{ID: 01, Nome: "Luiz Alexandre de Sousa Freitas", Email: "luiz.alexandre@live.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 02, Nome: "Luana Almeida Goncalves", Email: "luana.arte@live.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 03, Nome: "Eduardo Oliveira Cavalcanti", Email: "EduardoOliveiraCavalcanti@dayrep.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 04, Nome: "Daniel Goncalves Sousa", Email: "daniel.golsalves@live.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 05, Nome: "Gabrielly Rodrigues Santos", Email: "GabriellyRodriguesSantos@rhyta.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 06, Nome: "Sofia Lima Alves", Email: "SofiaLimaAlves@rhyta.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 07, Nome: "Caio Ribeiro Ferreira", Email: "CaioRibeiroFerreira@armyspy.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 10, Nome: "Carolina Goncalves Oliveira", Email: "CarolinaGoncalvesOliveira@dayrep.com", Cidade: "Morrinhos"},
-		Pessoa{ID: 11, Nome: "Vinícius Pinto Santos", Email: "ViniciusPintoSantos@dayrep.com", Cidade: "Morrinhos"},
+	vars := mux.Vars(r)
+
+	idPessoa, err := strconv.Atoi(vars["pessoaId"])
+
+	if err != nil {
+		fmt.Fprintln(w, "ID inválido")
+		panic(err.Error())
 	}
 
-	vars := mux.Vars(r)
-	todoId := vars["pessoaId"]
+	db, err := sql.Open("mysql", "root:luizgostaderuby@tcp(138.197.3.102:3306)/dojo")
+	if err != nil {
+		fmt.Print("DEU RUIM")
+		panic(err.Error())
+	}
+	defer db.Close()
 
-	i, err := strconv.Atoi(todoId)
+	rows, err := db.Query("SELECT p.id, p.nome, p.cpf, p.senha, e.email FROM pessoas p JOIN emails e on p.id = e.pessoa_id WHERE p.id = " + strconv.Itoa(idPessoa))
+	if err != nil {
+		fmt.Print("DEU RUIM")
+		panic(err.Error())
+	}
 
-	if err == nil {
-		json.NewEncoder(w).Encode(pessoas[i+1])
+	if rows.Next() {
+		var id int
+		var nome string
+		var cpf string
+		var senha string
+		var email string
+
+		err = rows.Scan(&id, &nome, &cpf, &senha, &email)
+
+		pessoa := Pessoa{ID: id, Nome: nome, Email: email, CPF: cpf, Senha: senha}
+
+		if err := json.NewEncoder(w).Encode(pessoa); err != nil {
+			panic(err)
+		}
 	} else {
-		fmt.Fprintln(w, "ID inválido")
+		fmt.Fprintln(w, "Não existe nemhum usuário com o ID "+strconv.Itoa(idPessoa))
 	}
 
 }
