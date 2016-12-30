@@ -37,15 +37,33 @@ var routes = Routes{
 		Index,
 	},
 	Route{
-		"TodoIndex",
+		"GetAllPessoas",
 		"GET",
 		"/pessoas",
 		GetAllPessoas,
 	},
 	Route{
-		"TodoShow",
+		"GetPessoaID",
 		"GET",
 		"/pessoas/{pessoaId}",
 		GetPessoaID,
+	},
+	Route{
+		"DeletePessoaID",
+		"DELETE",
+		"/pessoas/{pessoaId}",
+		DeletePessoaID,
+	},
+	Route{
+		"CriarPessoa",
+		"POST",
+		"/pessoas",
+		CriarPessoa,
+	},
+	Route{
+		"AlterarPessoa",
+		"PATCH",
+		"/pessoas/{pessoaId}",
+		AlterarSenhaPessoa,
 	},
 }
